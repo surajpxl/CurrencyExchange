@@ -57,3 +57,38 @@ btn.addEventListener("click", (evt) => {
 window.addEventListener("load", () => {
   updateExchangeRate();
 });
+
+document.querySelector("button").addEventListener("click", function (event) {
+  event.preventDefault(); // Prevent form submission
+
+  const fromCurrency = document.querySelector('select[name="from"]').value;
+  const toCurrency = document.querySelector('select[name="to"]').value;
+  const amount = document.querySelector('.amount input').value;
+
+  if (!fromCurrency || !toCurrency || isNaN(amount) || amount <= 0) {
+    alert("Please enter valid input values.");
+    return;
+  }
+
+  // Fetch exchange rate from an API
+  fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch exchange rate.");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      const exchangeRate = data.rates[toCurrency];
+      if (!exchangeRate) {
+        alert("Exchange rate not available for the selected currencies.");
+        return;
+      }
+      const convertedAmount = (amount * exchangeRate).toFixed(2);
+      document.querySelector(".msg").textContent = `${amount} ${fromCurrency} = ${convertedAmount} ${toCurrency}`;
+    })
+    .catch((error) => {
+      console.error(error);
+      alert("An error occurred while fetching the exchange rate.");
+    });
+});
